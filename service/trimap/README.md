@@ -11,7 +11,7 @@ python3.9 -m pip install -r requirements.txt
 ## Runing the service
 
 ```:bash
-FLASK_APP=app.py flask run -p 5000
+FLASK_APP=app.py flask run -p 3001
 ```
 
 ## Removing env

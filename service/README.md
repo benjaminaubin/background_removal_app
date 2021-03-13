@@ -13,3 +13,11 @@
   year    = {2020},
 }
 ```
+
+## Requirements
+
+```:bash
+conda create -n bg_removal_service python=3.9
+conda activate bg_removal_service
+python3.9 -m pip install -r requirements.txt
+```

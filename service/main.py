@@ -9,20 +9,23 @@ from trimap.utils import read_image
 
 if __name__ == "__main__":
 
-    # parser = argparse.ArgumentParser()
-    # parser.add_argument("--image_path", type=str)
-    # args = parser.parse_args()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--path", type=str,
+                        default="./examples/images/4.jpeg")
+    args = parser.parse_args()
 
     ## Load image ##
-    path = "./examples/images/4.jpeg"
-    assert os.path.exists(path)
-    image = read_image(path)
+    assert os.path.exists(args.path)
+    image = read_image(args.path)
 
-    response_trimap = requests.post("http://127.0.0.1:5000/", json={"input": image.tolist()})
+    ## Generates trimap ##
+    response_trimap = requests.post(
+        "http://127.0.0.1:3001/", json={"input": image.tolist()})
     trimap = np.array(response_trimap.json()["output"])
 
+    ## Generates matting ##
     response_matting = requests.post(
-        "http://127.0.0.1:3000/", json={"image": image.tolist(), "trimap": trimap.tolist()}
+        "http://127.0.0.1:3002/", json={"image": image.tolist(), "trimap": trimap.tolist()}
     )
     composite = np.array(response_matting.json()["composite"])
     alpha = np.array(response_matting.json()["alpha"])

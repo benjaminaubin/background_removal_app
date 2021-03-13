@@ -50,8 +50,10 @@ class MattingModule(nn.Module):
         self.decoder = net_dec
 
     def forward(self, image, two_chan_trimap, image_n, trimap_transformed):
-        resnet_input = torch.cat((image_n, trimap_transformed, two_chan_trimap), 1)
-        conv_out, indices = self.encoder(resnet_input, return_feature_maps=True)
+        resnet_input = torch.cat(
+            (image_n, trimap_transformed, two_chan_trimap), 1)
+        conv_out, indices = self.encoder(
+            resnet_input, return_feature_maps=True)
         return self.decoder(conv_out, image, indices, two_chan_trimap)
 
 
@@ -71,7 +73,7 @@ class ModelBuilder:
         num_channels = 3 + 6 + 2
 
         if num_channels > 3:
-            # print(f'modifying input layer to accept {num_channels} channels')
+            # modifying input layer to accept {num_channels} channels
             net_encoder_sd = net_encoder.state_dict()
             conv1_weights = net_encoder_sd["conv1.weight"]
 
@@ -267,7 +269,8 @@ def norm(dim, bn=False):
 
 def fba_fusion(alpha, img, F, B):
     F = alpha * img + (1 - alpha ** 2) * F - alpha * (1 - alpha) * B
-    B = (1 - alpha) * img + (2 * alpha - alpha ** 2) * B - alpha * (1 - alpha) * F
+    B = (1 - alpha) * img + (2 * alpha - alpha ** 2) * \
+        B - alpha * (1 - alpha) * F
 
     F = torch.clamp(F, 0, 1)
     B = torch.clamp(B, 0, 1)
@@ -299,7 +302,8 @@ class fba_decoder(nn.Module):
         self.ppm = nn.ModuleList(self.ppm)
 
         self.conv_up1 = nn.Sequential(
-            Conv2d(2048 + len(pool_scales) * 256, 256, kernel_size=3, padding=1, bias=True),
+            Conv2d(2048 + len(pool_scales) * 256, 256,
+                   kernel_size=3, padding=1, bias=True),
             norm(256, self.batch_norm),
             nn.LeakyReLU(),
             Conv2d(256, 256, kernel_size=3, padding=1),
@@ -308,14 +312,16 @@ class fba_decoder(nn.Module):
         )
 
         self.conv_up2 = nn.Sequential(
-            Conv2d(256 + 256, 256, kernel_size=3, padding=1, bias=True), norm(256, self.batch_norm), nn.LeakyReLU()
+            Conv2d(256 + 256, 256, kernel_size=3, padding=1,
+                   bias=True), norm(256, self.batch_norm), nn.LeakyReLU()
         )
         if self.batch_norm:
             d_up3 = 128
         else:
             d_up3 = 64
         self.conv_up3 = nn.Sequential(
-            Conv2d(256 + d_up3, 64, kernel_size=3, padding=1, bias=True), norm(64, self.batch_norm), nn.LeakyReLU()
+            Conv2d(256 + d_up3, 64, kernel_size=3, padding=1,
+                   bias=True), norm(64, self.batch_norm), nn.LeakyReLU()
         )
 
         self.unpool = nn.MaxUnpool2d(2, stride=2)
@@ -342,17 +348,20 @@ class fba_decoder(nn.Module):
         ppm_out = torch.cat(ppm_out, 1)
         x = self.conv_up1(ppm_out)
 
-        x = torch.nn.functional.interpolate(x, scale_factor=2, mode="bilinear", align_corners=False)
+        x = torch.nn.functional.interpolate(
+            x, scale_factor=2, mode="bilinear", align_corners=False)
 
         x = torch.cat((x, conv_out[-4]), 1)
 
         x = self.conv_up2(x)
-        x = torch.nn.functional.interpolate(x, scale_factor=2, mode="bilinear", align_corners=False)
+        x = torch.nn.functional.interpolate(
+            x, scale_factor=2, mode="bilinear", align_corners=False)
 
         x = torch.cat((x, conv_out[-5]), 1)
         x = self.conv_up3(x)
 
-        x = torch.nn.functional.interpolate(x, scale_factor=2, mode="bilinear", align_corners=False)
+        x = torch.nn.functional.interpolate(
+            x, scale_factor=2, mode="bilinear", align_corners=False)
         x = torch.cat((x, conv_out[-6][:, :3], img, two_chan_trimap), 1)
 
         output = self.conv_up4(x)

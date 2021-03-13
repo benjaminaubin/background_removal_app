@@ -2,8 +2,6 @@ import torch.nn as nn
 import math
 from torch.nn import BatchNorm2d
 
-__all__ = ['ResNet']
-
 
 def conv3x3(in_planes, out_planes, stride=1):
     "3x3 convolution with padding"
@@ -96,7 +94,8 @@ class ResNet(nn.Module):
         self.conv3 = conv3x3(64, 128)
         self.bn3 = BatchNorm2d(128)
         self.relu3 = nn.ReLU(inplace=True)
-        self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1, return_indices=True)
+        self.maxpool = nn.MaxPool2d(
+            kernel_size=3, stride=2, padding=1, return_indices=True)
 
         self.layer1 = self._make_layer(block, 64, layers[0])
         self.layer2 = self._make_layer(block, 128, layers[1], stride=2)
