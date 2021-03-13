@@ -1,0 +1,8 @@
+torch>=1.4.0
+numpy
+matplotlib
+gdown
+opencv-python
+torchvision>=0.9.0
+flask
+flask_restplus
